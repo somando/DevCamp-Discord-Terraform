@@ -1,6 +1,8 @@
 services:
   terraform:
-    image: hashicorp/terraform
+    build:
+      context: .
+      dockerfile: docker/terraform/Dockerfile
     platform: linux/amd64
     volumes:
       - .:/app
@@ -9,4 +11,4 @@ services:
     working_dir: /app
     tty: true
     stdin_open: true
-    entrypoint: /bin/sh
+    entrypoint: /bin/bash

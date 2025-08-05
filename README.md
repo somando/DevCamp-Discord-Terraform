@@ -15,6 +15,10 @@
 ```
 .
 ├── docker-compose.yml          # Terraformコンテナの設定
+├── docker/
+│   └── terraform/
+│       ├── Dockerfile          # カスタムTerraformイメージ
+│       └── .bashrc             # direnv自動設定
 ├── .env.sample                 # 環境変数のサンプル
 ├── LICENSE
 └── services/
@@ -27,12 +31,14 @@
         │       │   ├── main.tf
         │       │   ├── backend.tf
         │       │   ├── variables.tf
-        │       │   └── outputs.tf
+        │       │   ├── outputs.tf
+        │       │   └── .envrc         # TF_STATE_NAME設定
         │       └── channels_20xx/      # 20xx年度チャンネル設定
         │           ├── main.tf
         │           ├── backend.tf
         │           ├── variables.tf
-        │           └── outputs.tf
+        │           ├── outputs.tf
+        │           └── .envrc         # TF_STATE_NAME設定
         └── modules/
             ├── provider.tf
             ├── server/                 # サーバーモジュール
@@ -79,11 +85,17 @@
 2. GitLab Terraform StateのURLを取得  
    - 取得したURLを`.env`ファイルに設定  
    - URL形式は `https://[gitlab_domain]/api/v4/projects/[project_id]/terraform/state`  
+3. ディレクトリに`.envrc`を作成し、以下の内容を設定
+
+   ```bash
+   export TF_STATE_NAME=[Terraform Stateの名前]
+   ```
 
 ### 4. Terraform
 
 1. Docker上でTerraformコンテナを起動し、Terraformを実行  
-   （使用しているTerraform Providerがx86_64のみ対応のため、Apple SiliconではDockerを利用）
+   （使用しているTerraform Providerがx86_64のみ対応のため、Apple SiliconではDockerを利用）  
+   カスタムDockerイメージには`bash`と`direnv`が含まれています。
 
     ```bash
     docker compose run --rm terraform
@@ -97,6 +109,7 @@
     ```bash
     # サーバー設定を先に適用
     cd services/discord/environments/pro/server
+    direnv allow
     terraform plan
     terraform apply
 
@@ -104,6 +117,7 @@
 
     # その後チャンネル設定を適用
     cd ../channels
+    direnv allow
     terraform plan
     terraform apply
     terraform apply  # 1回目のapplyではチャンネルのpositionが正しく反映されないため、2回目のapplyを実行
